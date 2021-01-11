@@ -1,0 +1,13 @@
+# Adding loggers to this file will affix them to the given level as they will
+# no longer respond to the `LOG_LEVEL` or `uptimer_LOG_LEVEL` settings.
+# Use with caution.
+
+version: 1
+
+loggers:
+  uptimer.helpers.threads.processing_queue:
+    level: INFO
+  uptimer.events.cache:
+    level: INFO
+  kafka:
+    level: WARNING

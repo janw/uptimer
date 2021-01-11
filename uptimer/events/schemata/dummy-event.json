@@ -1,0 +1,33 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "title": "DummyEvent",
+    "version": "0.1.0",
+    "type": "object",
+    "allOf": [
+        {
+            "$ref": "root.json"
+        },
+        {
+            "properties": {
+                "target": {
+                    "type": "string"
+                },
+                "reader": {
+                    "type": "string"
+                },
+                "integer_value": {
+                    "type": "number"
+                },
+                "float_value": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "target",
+                "reader",
+                "integer_value",
+                "float_value"
+            ]
+        }
+    ]
+}

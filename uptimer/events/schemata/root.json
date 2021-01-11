@@ -1,0 +1,28 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "title": "Event",
+    "version": "0.1.0",
+    "type": "object",
+    "required": [
+        "schema_title",
+        "schema_version",
+        "uuid",
+        "event_time"
+    ],
+    "properties": {
+        "schema_title": {
+            "type": "string"
+        },
+        "schema_version": {
+            "type": "string"
+        },
+        "uuid": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "event_time": {
+            "type": "string",
+            "format": "date-time"
+        }
+    }
+}

@@ -1,0 +1,45 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "title": "ProbeEvent",
+    "version": "0.1.0",
+    "type": "object",
+    "allOf": [
+        {
+            "$ref": "root.json"
+        },
+        {
+            "properties": {
+                "protocol": {
+                    "type": "string"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status_code": {
+                    "type": "integer"
+                },
+                "response_time_ms": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "error": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "hostname",
+                "port",
+                "status_code",
+                "response_time_ms"
+            ]
+        }
+    ]
+}
