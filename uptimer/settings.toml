@@ -1,0 +1,41 @@
+[default]
+log_level = "info"
+uptimer_log_level = "info"
+
+writer_plugin = "writers.stdout:Stdout"
+
+postgres_port = 5432
+
+kafka_ssl_check_hostname = false
+kafka_security_protocol = "SSL"
+
+[development]
+
+database = "uptimer"
+postgres_host = "localhost"
+postgres_user = "postgres"
+postgres_password = "postgres"
+
+[testing]
+log_level = "warning"
+uptimer_log_level = "debug"
+
+# Basic settings
+reader_plugin = "some.plugin"
+
+# For uptimer.plugins.readers.kafka.kafka_reader
+# and uptimer.plugins.writers.kafka.kafka_writer
+kafka_bootstrap_server = "localhost:9092"
+
+# For uptimer.plugins.readers.kafka.kafka_reader
+kafka_reader_topic = "sometopic"
+
+# For uptimer.plugins.writers.kafka.kafka_writer
+kafka_writer_topic = "sometopic"
+
+# For uptimer.plugins.writers.storage.postgres_writer
+database = "test_db"
+postgres_host = "localhost"
+postgres_port = 5432
+postgres_user = "testuser"
+postgres_password = "testpassword"
