@@ -42,6 +42,17 @@ version_files = [
 ]
 tag_format = "$version"
 
+[tool.black]
+line-length = 88
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | hack
+  | tools
+)/
+'''
+
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"

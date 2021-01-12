@@ -1,0 +1,41 @@
+exclude: >
+  (?x)^(
+    .+/hack/.+|
+    .+/tools/.+
+  )$
+default_language_version:
+  python: python3.8
+repos:
+  - repo: local
+    hooks:
+      - id: python-no-print
+        name: check for print()
+        description: "A quick check for the `print()` built-in function"
+        entry: '\bprint\('
+        language: pygrep
+        types: [python]
+  - repo: https://github.com/psf/black
+    rev: stable
+    hooks:
+      - id: black
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: "v1.7.0"
+    hooks:
+      - id: python-check-blanket-noqa
+      - id: python-no-eval
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: "v3.4.0"
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: "3.8.4"
+    hooks:
+      - id: flake8
+        additional_dependencies: ["flake8-bugbear"]
+  - repo: https://github.com/timothycrosley/isort
+    rev: master
+    hooks:
+      - id: isort
+        files: '\.py$'
