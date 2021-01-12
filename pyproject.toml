@@ -1,4 +1,47 @@
+[tool.poetry]
+name = "Uptimer"
+version = "0.0.1"
+description = "Plugin-based prober to determine website uptime"
+authors = [
+    "Jan Willhaus <mail@janwillhaus.de>",
+]
+license = "Apache-2.0"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+jsonschema = {version = "^3.0",extras = ["format"]}
+dynaconf = {version = "~2.0.2",extras = ["all"]}
+requests = {version = "^2.25",extras = ["socks"]}
+cachetools = "^4.2"
+psycopg2 = "^2.8"
+kafka-python = "^2.0"
+python-json-logger = "^2.0"
+structlog = "^20.2"
+colorama = "^0.4"
+munch = "^2.5.0"
+python-dateutil = "^2.8.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+pytest-cov = "^2.10"
+pytest-env = "^0.6.2"
+pytest-mock = "^1.10"
+pytest-vcr = "^1.0"
+
+# Dev tools
+commitizen = "*"
+ipython = "*"
+jedi = "!=0.18.0"  # 0.18.0 breaks IPython, see https://github.com/ipython/ipython/issues/12745
+
 [tool.commitizen]
 name = "cz_conventional_commits"
 version = "0.0.1"
+version_files = [
+    "uptimer/__init__.py:__version__",
+    "pyproject.toml:version"
+]
 tag_format = "$version"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
