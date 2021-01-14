@@ -1,0 +1,9 @@
+[coverage:run]
+source =
+    uptimer/
+omit =
+    uptimer/__main__.py
+
+[coverage:report]
+precision = 2
+show_missing = true

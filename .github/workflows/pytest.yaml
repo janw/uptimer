@@ -1,0 +1,46 @@
+on:
+  pull_request:
+  push:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Install poetry
+        uses: abatilo/actions-poetry@v2.1.0
+
+      - name: Install system-level dependencies
+        run: sudo sh ./tools/dependencies-pre.sh
+
+      - name: Set up pip cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.cache/pypoetry
+          # Use lock-file hash to key the cache.
+          #
+          # NOTE: the cache action does not currently allow for manual cache
+          # invalidation. If we must invalidate the cache in the future, this
+          # version number in the key can be increased instead, e.g. to -v2-,
+          # etc.
+          key: poetry-v1-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            poetry-v1-
+
+      - name: Install python dependencies
+        env:
+          PIP_CACHE_DIR: "~/.cache/pip"
+        run: |
+          poetry install --no-root
+
+      - name: Test with pytest
+        run: |
+          poetry run pytest \
+            --cov \
+            --no-cov-on-fail
