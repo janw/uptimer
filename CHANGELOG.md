@@ -1,3 +1,9 @@
+## 0.1.1 (2021-01-14)
+
+### Fix
+
+- **docker**: ensure images are semantically versioned
+
 ## 0.1.0 (2021-01-14)
 
 ### Fix
