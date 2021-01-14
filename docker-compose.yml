@@ -1,0 +1,40 @@
+version: "3.4"
+
+x-uptimer-instance: &uptimer-instance
+  build: .
+  image: willhaus/uptimer
+  restart: unless-stopped
+  env_file:
+    - ./.credentials/kafka.env
+    - ./.credentials/postgres.env
+  volumes:
+    - ./.credentials/ca.pem:/credentials/ca.pem
+    - ./.credentials/service.key:/credentials/service.key
+    - ./.credentials/service.cert:/credentials/service.cert
+
+services:
+
+  producer:
+    <<: *uptimer-instance
+    container_name: producer
+    environment:
+      - READER_PLUGIN=readers.probes.http
+      - LOG_LEVEL=debug
+      - PROBE_URLS=https://github.com, https://aiven.io
+      - PROBE_INTERVAL=10
+
+      - WRITER_PLUGIN=writers.kafka
+      - KAFKA_SSL_CAFILE=/credentials/ca.pem
+      - KAFKA_SSL_KEYFILE=/credentials/service.key
+      - KAFKA_SSL_CERTFILE=/credentials/service.cert
+
+  consumer:
+    <<: *uptimer-instance
+    container_name: consumer
+    environment:
+      - READER_PLUGIN=readers.kafka
+      - KAFKA_SSL_CAFILE=/credentials/ca.pem
+      - KAFKA_SSL_KEYFILE=/credentials/service.key
+      - KAFKA_SSL_CERTFILE=/credentials/service.cert
+
+      - WRITER_PLUGIN=writers.stdout

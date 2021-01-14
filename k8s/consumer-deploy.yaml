@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uptimer-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: uptimer-consumer
+  template:
+    metadata:
+      labels:
+        app: uptimer-consumer
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: uptimer
+          image: willhaus/uptimer
+          volumeMounts:
+            - name: kafka-auth
+              readOnly: true
+              mountPath: /credentials
+          envFrom:
+            - secretRef:
+                name: kafka-connection
+            - secretRef:
+                name: postgres-connection
+          env:
+            - name: READER_PLUGIN
+              value: readers.kafka
+            - name: WRITER_PLUGIN
+              value: writers.postgres
+
+            - name: KAFKA_SSL_CAFILE
+              value: /credentials/ca.pem
+            - name: KAFKA_SSL_KEYFILE
+              value: /credentials/service.key
+            - name: KAFKA_SSL_CERTFILE
+              value: /credentials/service.cert
+
+      volumes:
+        - name: kafka-auth
+          secret:
+            secretName: kafka-auth
