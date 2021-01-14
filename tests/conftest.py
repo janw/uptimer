@@ -134,7 +134,7 @@ mock_postgres_tuple = namedtuple(
 
 @pytest.fixture()
 def mockpg(mocker):
-    get_conn = mocker.patch("uptimer.plugins.mixins.get_postgres_conn")
+    get_conn = mocker.patch("uptimer.plugins.writers.postgres.get_postgres_conn")
     get_conn.return_values = mocker.MagicMock(name="connection instance")
     get_conn.return_value.cursor = mocker.MagicMock()
     get_conn.return_value.cursor.return_value = mocker.MagicMock()

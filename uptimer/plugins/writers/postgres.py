@@ -28,6 +28,8 @@ class Plugin(WriterPlugin):
     )
 
     def __init__(self, *args, **kwargs):
+        super().__init__()
+
         if self.settings.database_url and any(
             (
                 self.settings.database,

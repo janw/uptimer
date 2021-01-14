@@ -1,0 +1,25 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "title": "SimpleEvent",
+    "version": "0.1.0",
+    "type": "object",
+    "allOf": [
+        {
+            "$ref": "root.json"
+        },
+        {
+            "properties": {
+                "data": {
+                    "type": "string"
+                },
+                "more_data": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "data",
+                "more_data"
+            ]
+        }
+    ]
+}
