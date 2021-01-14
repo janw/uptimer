@@ -67,7 +67,7 @@ class HTTPProbe(ReaderPlugin):
         while True:
             yield from self._probe_all()
 
-            if self._shutdown is True or self.settings.probe_interval is None:
+            if self._shutdown is True or self.probe_interval < 0:
                 self.logger.debug("Shutting down loop.")
                 break
 

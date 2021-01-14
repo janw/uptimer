@@ -2,7 +2,14 @@
 log_level = "info"
 uptimer_log_level = "info"
 
-writer_plugin = "writers.stdout:Stdout"
+reader_plugin = "readers.probes.http"
+writer_plugin = "writers.stdout"
+
+probe_urls = """
+    https://github.com,
+    https://janw.xyz
+"""
+probe_interval = -1
 
 postgres_port = 5432
 
