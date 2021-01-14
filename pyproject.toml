@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Uptimer"
-version = "0.0.1"
+version = "0.1.0"
 description = "Plugin-based prober to determine website uptime"
 authors = [
     "Jan Willhaus <mail@janwillhaus.de>",
@@ -35,7 +35,7 @@ jedi = "!=0.18.0"  # 0.18.0 breaks IPython, see https://github.com/ipython/ipyth
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.0.1"
+version = "0.1.0"
 version_files = [
     "uptimer/__init__.py:__version__",
     "pyproject.toml:version"
