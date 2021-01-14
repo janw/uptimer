@@ -1,6 +1,18 @@
 # Uptimer 📈
 
-**Uptimer is a plugin-based prober to determine website uptime.**
+<!-- markdownlint-disable MD033 -->
+<div align="center">
+
+**A plugin-based prober to determine website uptime.**
+
+[![Build Status](https://github.com/janw/uptimer/workflows/Build/badge.svg)](https://github.com/janw/uptimer/actions?query=workflow%3ABuild+branch%3Amaster)
+[![Tests Status](https://github.com/janw/uptimer/workflows/Tests/badge.svg)](https://github.com/janw/uptimer/actions?query=workflow%3ATests+branch%3Amaster)
+[![Code Coverage](https://codecov.io/gh/janw/uptimer/branch/master/graph/badge.svg?token=2I5XYEBZ4W)](https://codecov.io/gh/janw/uptimer)
+
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+[![Dependency management: poetry](https://img.shields.io/badge/deps-poetry-blueviolet.svg)](https://poetry.eustace.io/docs/)
+
+</div>
 
 Uptimer is designed to be modular and extensible, and –by using reader/probe plugins– not only allows for HTTP(S) probing of websites but potentially more low-level protocols (such as TCP, ICMP/ping) and other application layer protocols. The forwarding and processing data is extensible as well, so it is possible to run Uptimer as a single instance that stores results in a database directly, or have an arbitrary number of probe instances that produce results into a Kafka queue, which in turn is being consumed by only a few instances that persist the results into the database.
 
