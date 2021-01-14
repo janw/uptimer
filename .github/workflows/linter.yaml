@@ -1,0 +1,26 @@
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Lint
+        uses: github/super-linter@v3
+        env:
+          VALIDATE_DOCKERFILE: true
+          VALIDATE_MARKDOWN: true
+          VALIDATE_PYTHON_BLACK: true
+          VALIDATE_PYTHON_FLAKE8: true
+          VALIDATE_PYTHON_ISORT: true
+          VALIDATE_YAML: true
+
+          # Only validate new/changed files
+          VALIDATE_ALL_CODEBASE: false
+
+          # The GITHUB_TOKEN always exists in CI but must be passed on
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
