@@ -13,7 +13,7 @@ jsonschema = {version = "^3.0",extras = ["format"]}
 dynaconf = {version = "~2.0.2",extras = ["all"]}
 requests = {version = "^2.25",extras = ["socks"]}
 cachetools = "^4.2"
-psycopg2 = "^2.8"
+psycopg2-binary = "^2.8"
 kafka-python = "^2.0"
 python-json-logger = "^0.1.11"
 structlog = "^19.2"
@@ -32,6 +32,13 @@ pytest-vcr = "^1.0"
 commitizen = "*"
 ipython = "*"
 jedi = "!=0.18.0"  # 0.18.0 breaks IPython, see https://github.com/ipython/ipython/issues/12745
+
+pre-commit = "*"
+flake8 = "~3.8.4"
+flake8-bugbear = "*"
+black = {version="~20.8b1", allow-prereleases=true}
+isort = "~5.7.0"
+mypy = "*"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
