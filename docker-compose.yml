@@ -20,7 +20,7 @@ services:
     environment:
       - READER_PLUGIN=readers.probes.http
       - LOG_LEVEL=debug
-      - PROBE_URLS=https://github.com, https://aiven.io
+      - PROBE_URLS=[https://github.com, https://janw.xyz]
       - PROBE_INTERVAL=10
 
       - WRITER_PLUGIN=writers.kafka
@@ -37,4 +37,4 @@ services:
       - KAFKA_SSL_KEYFILE=/credentials/service.key
       - KAFKA_SSL_CERTFILE=/credentials/service.cert
 
-      - WRITER_PLUGIN=writers.stdout
+      - WRITER_PLUGIN=writers.postgres

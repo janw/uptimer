@@ -3,7 +3,7 @@ kind: StatefulSet
 metadata:
   name: uptimer-producer
 spec:
-  replicas: 3
+  replicas: 2
   serviceName: uptimer-producer
   podManagementPolicy: Parallel
   selector:
@@ -41,15 +41,14 @@ spec:
             - name: PROBE_INTERVAL
               value: "30"
             - name: PROBE_URLS
-              value: >
-                https://github.com,
-                https://aiven.io,
-                https://janw.xyz,
+              value: |
+                - https://github.com
+                - https://janw.xyz
 
             - name: DISTRIBUTED_WORKERS_ENABLED
               value: "true"
             - name: DISTRIBUTED_WORKERS_TOTAL
-              value: "3"
+              value: "2"
             - name: DISTRIBUTED_WORKERS_INDEX
               valueFrom:
                 fieldRef:
