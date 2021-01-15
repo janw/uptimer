@@ -1,3 +1,4 @@
+import yaml
 import time
 from collections import namedtuple
 from urllib.parse import urlparse
@@ -6,6 +7,7 @@ from requests import RequestException, Session, Timeout
 
 from uptimer import events
 from uptimer.plugins.readers import ReaderPlugin
+from uptimer.plugins.mixins import DistributeWorkMixin
 
 session = Session()
 
@@ -13,7 +15,7 @@ session = Session()
 ProbeTarget = namedtuple("ProbeTarget", "protocol, hostname, port, path")
 
 
-class HTTPProbe(ReaderPlugin):
+class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
     plugin_type = "HTTP(S) prober"
     event_type = events.ProbeEvent
     required_settings = ("probe_urls",)
@@ -38,8 +40,8 @@ class HTTPProbe(ReaderPlugin):
         )
 
         self.targets = []
-
-        for url in self.settings.probe_urls.split(","):
+        probe_urls = self._parse_probe_urls()
+        for url in self.distribute_data(probe_urls):
             url = url.strip()
             if not url:
                 continue
@@ -61,6 +63,15 @@ class HTTPProbe(ReaderPlugin):
                     ),
                 )
             )
+
+    def _parse_probe_urls(self):
+        try:
+            return yaml.safe_load(self.settings.probe_urls)
+        except yaml.YAMLError:
+            pass
+
+        # Attempt crude parsing from comma-separated URLs
+        return [u for u in map(str.strip, self.settings.probe_urls.split(",")) if u]
 
     def read(self):
 
