@@ -21,6 +21,7 @@ services:
       - READER_PLUGIN=readers.probes.http
       - LOG_LEVEL=debug
       - PROBE_URLS=[ 'https://github.com', 'https://janw.xyz', ]
+      - PROBE_REGEXES=[ '(?im)my name is jan', ]
       - PROBE_INTERVAL=10
 
       - WRITER_PLUGIN=writers.kafka

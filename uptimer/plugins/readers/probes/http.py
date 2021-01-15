@@ -1,6 +1,8 @@
+import re
 import yaml
 import time
 from collections import namedtuple
+from functools import partial
 from urllib.parse import urlparse
 
 from requests import RequestException, Session, Timeout
@@ -12,14 +14,21 @@ from uptimer.plugins.mixins import DistributeWorkMixin
 session = Session()
 
 
-ProbeTarget = namedtuple("ProbeTarget", "protocol, hostname, port, path")
+ProbeTarget = namedtuple("ProbeTarget", "protocol, hostname, port, path, regex")
+
+# re_compile = partial(re.compile, flags=re.IGNORECASE | re.MULTILINE)
 
 
 class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
     plugin_type = "HTTP(S) prober"
     event_type = events.ProbeEvent
     required_settings = ("probe_urls",)
-    optional_settings = ("probe_timeout", "probe_tls_verify", "probe_interval")
+    optional_settings = (
+        "probe_regexes",
+        "probe_timeout",
+        "probe_tls_verify",
+        "probe_interval",
+    )
     _shutdown = False
     targets = None
 
@@ -39,9 +48,16 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
             int(self.settings.probe_timeout) if self.settings.probe_timeout else 10
         )
 
+        # Parse PROBE_URLS and PROBE_REGEXES from settings, ensure they are of equal
+        # length (either by using a single regex for all URLs or one for each, or none
+        # at all).
+        probe_urls = self._parse_probe_param(self.settings.probe_urls)
+        regexes = self._parse_probe_regexes(
+            self.settings.probe_regexes, expected_count=len(probe_urls)
+        )
+
         self.targets = []
-        probe_urls = self._parse_probe_urls()
-        for url in self.distribute_data(probe_urls):
+        for regex, url in self.distribute_data(zip(regexes, probe_urls)):
             url = url.strip()
             if not url:
                 continue
@@ -58,31 +74,41 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
             self.targets.append(
                 (
                     url,
+                    # Keep all static properties in ProbeTarget namedtuple so they can
+                    # be forwarded into the event via call to `._as_dict`.
                     ProbeTarget(
-                        url_parts.scheme, url_parts.hostname, port, url_parts.path
+                        url_parts.scheme,
+                        url_parts.hostname,
+                        port,
+                        url_parts.path,
+                        regex,
                     ),
                 )
             )
 
-    def _parse_probe_urls(self):
-        if isinstance(self.settings.probe_urls, list):
-            return self.settings.probe_urls
+    def _parse_probe_param(self, param):
+        if isinstance(param, list):
+            return param
         try:
-            return yaml.safe_load(self.settings.probe_urls)
+            return yaml.safe_load(param)
         except yaml.YAMLError:
-            self.logger.warning(
-                "Could not YAML-parse PROBE_URLS:", probe_urls=self.settings.probe_urls
-            )
-            pass
+            raise ValueError("Parameters must be either TOML or YAML parseable")
 
-        # Attempt crude parsing from comma-separated URLs
-        parsed_urls = [
-            u for u in map(str.strip, self.settings.probe_urls.split(",")) if u
-        ]
-        self.logger.warning(
-            "Parsed PROBE_URLS as comma-separated values", parsed_urls=str(parsed_urls)
-        )
-        return
+    def _parse_probe_regexes(self, regexes, expected_count=1):
+        if not regexes:
+            return [None for _ in range(expected_count)]
+
+        regexes = self._parse_probe_param(self.settings.probe_regexes)
+        if len(regexes) == 1:
+            common_regex = re.compile(regexes[0])
+            return [common_regex for _ in range(expected_count)]
+        elif len(regexes) == expected_count:
+            re.compile(regexes[0])
+            return [re.compile(r) for r in regexes]
+        else:
+            raise ValueError(
+                "Number of PROBE_REGEXES must match number of PROBE_URLS or be 1"
+            )
 
     def read(self):
 
@@ -101,6 +127,8 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
             self.logger.info(f"Probing {target.hostname}")
 
             error = ""
+            response = None
+            matches_regex = True
             start_time = time.time()
             try:
                 response = session.get(
@@ -116,11 +144,16 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
 
             response_time_ms = round(1000 * (time.time() - start_time))
 
+            if target.regex and response:
+                self.logger.info(f"Checking regex /{target.regex.pattern}/")
+                matches_regex = target.regex.search(response.text) is not None
+
             yield self.event_type(
                 **target._asdict(),
                 status_code=status_code,
                 response_time_ms=response_time_ms,
                 error=error,
+                matches_regex=matches_regex,
             )
 
             self.logger.info(f"Done after {response_time_ms} ms")

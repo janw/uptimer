@@ -11,3 +11,7 @@ loggers:
     level: INFO
   kafka:
     level: WARNING
+  requests:
+    level: WARNING
+  urllib3:
+    level: WARNING

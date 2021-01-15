@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
     "title": "ProbeEvent",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "type": "object",
     "allOf": [
         {
@@ -32,6 +32,12 @@
                 },
                 "error": {
                     "type": "string"
+                },
+                "regex": {
+                    "type": ["string", "null"]
+                },
+                "matches_regex": {
+                    "type": ["boolean", "null"]
                 }
             },
             "required": [

@@ -5,10 +5,7 @@ uptimer_log_level = "info"
 reader_plugin = "readers.probes.http"
 writer_plugin = "writers.stdout"
 
-probe_urls = """
-    https://github.com,
-    https://janw.xyz
-"""
+probe_urls = [ 'https://github.com', 'https://janw.xyz' ]
 probe_interval = -1
 
 kafka_ssl_check_hostname = false

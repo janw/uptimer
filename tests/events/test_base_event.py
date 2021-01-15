@@ -42,6 +42,8 @@ def test_nested_schema_properties():
         "status_code",
         "response_time_ms",
         "error",
+        "regex",
+        "matches_regex",
         "customer",
         "cool_thing",
         "something_nested"

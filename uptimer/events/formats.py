@@ -28,6 +28,8 @@ class JSONEncoder(json.JSONEncoder):
             return self.from_datetime(obj)
         if isinstance(obj, uuid):
             return self.from_uuid(obj)
+        if isinstance(obj, re.Pattern):
+            return self.from_pattern(obj)
         return json.JSONEncoder.default(self, obj)
 
     @staticmethod
@@ -40,3 +42,7 @@ class JSONEncoder(json.JSONEncoder):
     @staticmethod
     def from_uuid(obj):
         return str(obj)
+
+    @staticmethod
+    def from_pattern(obj):
+        return str(obj.pattern)
