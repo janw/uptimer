@@ -65,13 +65,24 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
             )
 
     def _parse_probe_urls(self):
+        if isinstance(self.settings.probe_urls, list):
+            return self.settings.probe_urls
         try:
             return yaml.safe_load(self.settings.probe_urls)
         except yaml.YAMLError:
+            self.logger.warning(
+                "Could not YAML-parse PROBE_URLS:", probe_urls=self.settings.probe_urls
+            )
             pass
 
         # Attempt crude parsing from comma-separated URLs
-        return [u for u in map(str.strip, self.settings.probe_urls.split(",")) if u]
+        parsed_urls = [
+            u for u in map(str.strip, self.settings.probe_urls.split(",")) if u
+        ]
+        self.logger.warning(
+            "Parsed PROBE_URLS as comma-separated values", parsed_urls=str(parsed_urls)
+        )
+        return
 
     def read(self):
 

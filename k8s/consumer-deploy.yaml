@@ -16,6 +16,7 @@ spec:
       containers:
         - name: uptimer
           image: willhaus/uptimer
+          imagePullPolicy: Always
           volumeMounts:
             - name: kafka-auth
               readOnly: true
