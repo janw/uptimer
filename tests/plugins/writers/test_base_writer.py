@@ -7,7 +7,10 @@ from uptimer.plugins.writers import WriterPlugin
 
 event = Event(something="something")
 dummy = DummyEvent(
-    **{"target": "this", "reader": "that", "integer_value": 42, "float_value": 13.37}
+    target="this",
+    reader="that",
+    integer_value=42,
+    float_value=13.37,
 )
 
 

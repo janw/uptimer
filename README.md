@@ -149,6 +149,7 @@ Uptimer's uses the [pre-commit framework](https://pre-commit.com/) to enforce co
 
 * auto-formatting using [Black, the uncompromising Python code formatter](https://black.readthedocs.io).
 * import sorting using [isort](https://pycqa.github.io/isort/)
+* static typing using [mypy](http://www.mypy-lang.org/)
 * linting using [Flake8](https://flake8.pycqa.org) to ensure a consistent code-style, including the [bugbear plugin](https://github.com/PyCQA/flake8-bugbear)
 * a check to avoid using the print() built-in (most often should be replaced by a logger)
 * checks preventing `eval` and blanket `# NOQA` pragmas
@@ -195,3 +196,4 @@ docker-compose up --build
 * Make use of relational database schema, linking hosts with probe events
 * Improve robustness of settings parsing, specifically for the lists of PROBE_URLS, PROBE_REGEXES
 * Add more meaningful tests, specifically to validate specific plugin's communication with outside service
+* Add more type annotations beyond type inference and the current state annotations

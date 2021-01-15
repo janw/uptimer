@@ -1,7 +1,7 @@
 import json
 from collections.abc import MutableMapping
 from datetime import datetime, timezone
-from typing import ClassVar, Optional
+from typing import Any, ClassVar, Optional
 from uuid import UUID, uuid4
 
 import jsonschema
@@ -70,7 +70,7 @@ class Event(MutableMapping, metaclass=EventMeta):
         uuid: Optional[UUID] = None,
         event_time: Optional[datetime] = None,
         validate: Optional[bool] = True,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """Instantiates an Event with the given input parameters as its initial state.
 
