@@ -146,4 +146,5 @@ dmypy.json
 # ----
 pytest.xml
 .credentials/
+configuration.env
 db/schema.sql

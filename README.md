@@ -18,55 +18,73 @@ Uptimer is designed to be modular and extensible, and –by using reader/probe p
 
 The heart and core of Uptimer is an equally modular event paradigm that is used to ensure plugin compatibility and validity of data passed between plugins. Should a future to-be-probed protocol require additional properties to be produced, those can be defined in a new event type without the necessity of adapting other reader/writer plugins. Events based on and validated via [JSON Schema](https://json-schema.org/).
 
-Uptimer uses containerization as the primary "packaging" mechanism. Its Docker image is available on [Docker Hub as `docker.io/willhaus/uptimer`](https://hub.docker.com/r/willhaus/uptimer) or `willhaus/uptimer` for short.
+Uptimer is packaged using poetry but is also available as a Docker image on [Docker Hub as `docker.io/willhaus/uptimer`](https://hub.docker.com/r/willhaus/uptimer) or `willhaus/uptimer` for short.
 
 In its default usage scenario Uptimer uses Kafka as a message bus to push probe results to, and PostgreSQL as the database to ultimately store the results in. In both the Docker-compose stack as well as the k8s manifests, Uptimer has been preconfigured to use the necessary plugins for this forwarding chain to function. In any case you will **have to provide a Postgres `DATABASE_URL` as well as a `KAFKA_BOOTSTRAP_SERVER` and certificate-based authentication for Kafka**, thus the first step (below) applies to both scenarios.
 
-## Quick Start
+## Initial Setup
 
-This repository includes both a [`docker-compose.yml`](docker-compose.yml) file to run an instance of Uptimer locally, and [Kubernetes manifests](k8s/) with [Kustomize](https://kustomize.io/) configuration to run Uptimer in k8s. The following steps assume
-
-* Either of:
-  * Docker to be running and `docker-compose` installed, or
-  * a connection to a Kubernetes cluster to be configured and `kubectl` being available at the command line
-* A locally clone or copy of this repository, `github.com/janw/uptimer.git`
-* A running Postgres instance with an existing database
-* A running Kafka instance with an existing topic named `probes` which you connect to via client certificate authentication. This requires a client key/cert pair and adjacent CA certificate
-
-### Configuring Postgres and Kafka connections
-
-1. Create a copy of the `.credentials/*.env.example` files while removing the `.example` suffix:
+1. After checkout create a Python 3.8 virtual environment and install the project dependencies.
 
     ```bash
-    cp .credentials/kafka.env.example .credentials/kafka.env
-    cp .credentials/postgres.env.example .credentials/postgres.env
+    python3.8 -m venv .venv
+    . .venv/bin/activate
+    pip install poetry
+    poetry install
     ```
 
-2. Adjust the `KAFKA_BOOTSTRAP_SERVER` in `.credentials/kafka.env` to match your Kafka setup
-3. Copy the Kafka authentication files:
+2. Configure the connection parameters for Postgres and Kafka by copying the `configuration.env.example` file while removing the `.example` suffix, and adjusting its contents. The file will also be sourced automatically by the various ways to run Uptimer.
 
-    * the client key to `.credentials/service.key`
-    * the client certificate to `.credentials/service.cert`
-    * the CA certificate to `.credentials/ca.pem`.
+    ```bash
+    cp configuration.env.example configuration.env
+    ```
 
-4. Adjust the `DATABASE_URL` in `.credentials/kafka.env` to match your Postgres setup. The URL must follow [libpq's connection string](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING) specification.
+   * Adjust the `KAFKA_BOOTSTRAP_SERVER` and `DATABASE_URL` to match your environment
+   * Adjust the `KAFKA_SSL_*` variables to match your auth key/cert anc CA certificate
+   * Optional: change the `PROBE_*` parameters to change to urls, applied regexes or the interval for the requests
 
-### Option 1: Using Docker-compose
+3. Uptimer uses [dbmate](https://github.com/amacneil/dbmate) for database schema migration handling. It can be installed via:
 
-After configuring the Postgres and Kafka connections, the docker-compose stack can be brought up:
+    ```bash
+    # On macOS
+    brew install dbmate
+
+    # On Linux
+    sudo curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
+    sudo chmod +x /usr/local/bin/dbmate
+    ```
+
+4. Apply the database migrations to your Postgres instance
+
+    ```bash
+    . configuration.env
+
+    dbmate up
+    ```
+
+All steps below assume you have done this initial setup.
+
+## Running the application
+
+### Single Instance
+
+When not specifying a `WRITER_PLUGIN` Uptimer will output all generated events to stdout:
 
 ```bash
-# EITHER: Using the willhaus/uptimer image from Docker Hub
-docker-compose up
-
-# OR: Build the image on-the-fly before starting
-docker-compose up --build
+. .venv/bin/activate
+./bin/single_instance.sh
 ```
 
-### Option 2: Using Kubernetes
+### Using Kafka and Postgres
 
-Bringing up the k8s-based deployment, is just as easy as docker-compose. It is important to use kubectl's `-k` flag though:
+Two terminal windows are required for this, one for the producer instance (i.e. the one trying requests against the URLs) and forwarding events to Kafka, and a consumer instance, consuming the data from Kafka and writing it to Postgres:
 
 ```bash
-kubectl apply -k k8s/
+# Instance 1
+. .venv/bin/activate
+./bin/producer.sh
+
+# Instance 2
+. .venv/bin/activate
+./bin/consumer.sh
 ```
