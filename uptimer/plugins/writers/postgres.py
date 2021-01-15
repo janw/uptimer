@@ -1,7 +1,6 @@
 from jsonschema.exceptions import ValidationError
 from psycopg2 import sql
 from psycopg2.errors import DataError, IntegrityError
-from psycopg2.extensions import parse_dsn
 from psycopg2.extras import execute_batch
 
 from uptimer.events import Event
@@ -13,16 +12,8 @@ from uptimer.plugins.writers import WriterPlugin
 class Plugin(WriterPlugin):
     plugin_type = "postgres event writer"
     event_type = Event
+    required_settings = ("database_url",)
     optional_settings = (
-        # Either provide connection parameters as DSN ...
-        "database_url",
-        # ... or as separate parameters
-        "database",
-        "postgres_host",
-        "postgres_port",
-        "postgres_user",
-        "postgres_password",
-        # Other optional parameters
         "postgres_pagesize",
         "postgres_queue_timeout",
     )
@@ -30,28 +21,7 @@ class Plugin(WriterPlugin):
     def __init__(self, *args, **kwargs):
         super().__init__()
 
-        if self.settings.database_url and any(
-            (
-                self.settings.database,
-                self.settings.postgres_host,
-                self.settings.postgres_port,
-                self.settings.postgres_user,
-                self.settings.postgres_password,
-            )
-        ):
-            raise ValueError("Most use either DATABASE_URL or separate parameters")
-        elif self.settings.database_url:
-            postgres_conn_args = parse_dsn(self.settings.database_url)
-        else:
-            postgres_conn_args = dict(
-                database=self.settings.database,
-                host=self.settings.postgres_host,
-                port=self.settings.postgres_port,
-                user=self.settings.postgres_user,
-                password=self.settings.postgres_password,
-            )
-        self.postgres_conn = get_postgres_conn(**postgres_conn_args)
-
+        self.postgres_conn = get_postgres_conn(self.settings.database_url)
         self.page_size = self.settings.postgres_pagesize or 5000
         self.timeout = (
             float(self.settings.postgres_queue_timeout)

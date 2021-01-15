@@ -11,17 +11,12 @@ probe_urls = """
 """
 probe_interval = -1
 
-postgres_port = 5432
-
 kafka_ssl_check_hostname = false
 kafka_security_protocol = "SSL"
 
 [development]
 
-database = "uptimer"
-postgres_host = "localhost"
-postgres_user = "postgres"
-postgres_password = "postgres"
+database_url = "postgres://postgres:postgres@localhost/uptimer"
 
 [testing]
 log_level = "warning"
@@ -30,19 +25,15 @@ uptimer_log_level = "debug"
 # Basic settings
 reader_plugin = "some.plugin"
 
-# For uptimer.plugins.readers.kafka.kafka_reader
-# and uptimer.plugins.writers.kafka.kafka_writer
+# For uptimer.plugins.readers.kafka
+# and uptimer.plugins.writers.kafka
 kafka_bootstrap_server = "localhost:9092"
 
-# For uptimer.plugins.readers.kafka.kafka_reader
+# For uptimer.plugins.readers.kafka
 kafka_reader_topic = "sometopic"
 
-# For uptimer.plugins.writers.kafka.kafka_writer
+# For uptimer.plugins.writers.kafka
 kafka_writer_topic = "sometopic"
 
-# For uptimer.plugins.writers.storage.postgres_writer
-database = "test_db"
-postgres_host = "localhost"
-postgres_port = 5432
-postgres_user = "testuser"
-postgres_password = "testpassword"
+# For uptimer.plugins.writers.postgres
+database_url = "postgres://testuser:testpassword@localhost/test_db"

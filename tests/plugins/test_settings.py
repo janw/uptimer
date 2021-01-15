@@ -148,7 +148,7 @@ def test_object_instantiation_missing_required():
 
 def test_object_instantiation_with_dynaconf():
     PluginSettings(
-        required=("postgres_port",),
+        required=("database_url",),
         optional=("this_setting", "really_unsettling"),
         sources=(dynaconf_settings, COMMON_SOURCE),
     )

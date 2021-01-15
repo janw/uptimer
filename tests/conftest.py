@@ -73,11 +73,9 @@ re_split_migration = re.compile(r"^\-\-.*(migrate\:(?:up|down)).*$", re.MULTILIN
 @pytest.fixture(scope="session")
 def postgres_conn():
     return get_postgres_conn(
-        database=environ.get("TESTING_DATABASE", "test_db"),
-        host=environ.get("TESTING_POSTGRES_HOST", "localhost"),
-        port=int(environ.get("TESTING_POSTGRES_PORT", 5432)),
-        user=environ.get("TESTING_POSTGRES_USER", "postgres"),
-        password=environ.get("TESTING_POSTGRES_PASSWORD", "password"),
+        environ.get(
+            "TESTING_DATABASE_URL", "postgres://postgres:password@localhost/test_db"
+        ),
     )
 
 
