@@ -1,7 +1,6 @@
 import pytest
 
-from uptimer.plugins import load_plugin
-from uptimer.plugins import resolve_entrypoint
+from uptimer.plugins import load_plugin, resolve_entrypoint
 from uptimer.plugins.readers.dummies.dummy_events import Plugin as DummyEventPlugin
 from uptimer.plugins.readers.probes.http import HTTPProbe
 

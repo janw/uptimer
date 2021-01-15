@@ -1,9 +1,7 @@
 from time import sleep
 
-from uptimer.core.processors import queue_processor
-from uptimer.core.processors import static_reader_writer_processor
-from uptimer.events import Event
-from uptimer.events import JobEvent
+from uptimer.core.processors import queue_processor, static_reader_writer_processor
+from uptimer.events import Event, JobEvent
 from uptimer.plugins import BasePlugin
 
 

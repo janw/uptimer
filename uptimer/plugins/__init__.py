@@ -87,9 +87,7 @@ class BasePlugin(ABC):
         pass
 
     def filter_by_schema(self, obj: Mapping) -> dict:
-        """Filters an object/dict according to properties defined in the JSON schema.
-
-        """
+        """Filters an object/dict according to properties defined in the JSON schema."""
         schema_spec = self.event_type.schema_spec
         (_, properties) = schema_spec.get("allOf", [None, {"properties": {}}])
         properties = properties["properties"]

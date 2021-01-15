@@ -1,6 +1,5 @@
 import logging
-from queue import Empty
-from queue import Queue
+from queue import Empty, Queue
 from unittest.mock import call
 
 import pytest

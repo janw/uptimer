@@ -1,28 +1,37 @@
 name: Linters
 
 on:
-  push:
   pull_request:
+  push:
+    branches: [master]
 
 jobs:
-  lint:
+  pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Check out
         uses: actions/checkout@v2
 
-      - name: Lint
-        uses: github/super-linter@v3
-        env:
-          VALIDATE_DOCKERFILE: true
-          VALIDATE_MARKDOWN: true
-          VALIDATE_PYTHON_BLACK: true
-          VALIDATE_PYTHON_FLAKE8: true
-          VALIDATE_PYTHON_ISORT: true
-          VALIDATE_YAML: true
+      - name: Set up python environment
+        uses: actions/setup-python@v2
+        with:
+            python-version: "3.8"
 
-          # Only validate new/changed files
-          VALIDATE_ALL_CODEBASE: false
+      - name: Run pre-commit
+        uses: pre-commit/action@v2.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-          # The GITHUB_TOKEN always exists in CI but must be passed on
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  conventional-commits:
+    runs-on: ubuntu-latest
+    container: commitizen/commitizen:2
+    steps:
+      - name: Check out
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Check for conventional commit formatting
+        run: |
+          cz check --rev-range 0.1.0..HEAD

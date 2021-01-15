@@ -4,9 +4,7 @@ from uuid import UUID
 import pytest
 
 from uptimer.events import Event
-from uptimer.events.serializer import dumps
-from uptimer.events.serializer import loads
-
+from uptimer.events.serializer import dumps, loads
 
 FIXTURE_SERIALIZED = """
 {

@@ -1,22 +1,19 @@
 import re
-import yaml
 import time
 from collections import namedtuple
-from functools import partial
 from urllib.parse import urlparse
 
+import yaml
 from requests import RequestException, Session, Timeout
 
 from uptimer import events
-from uptimer.plugins.readers import ReaderPlugin
 from uptimer.plugins.mixins import DistributeWorkMixin
+from uptimer.plugins.readers import ReaderPlugin
 
 session = Session()
 
 
 ProbeTarget = namedtuple("ProbeTarget", "protocol, hostname, port, path, regex")
-
-# re_compile = partial(re.compile, flags=re.IGNORECASE | re.MULTILINE)
 
 
 class HTTPProbe(DistributeWorkMixin, ReaderPlugin):

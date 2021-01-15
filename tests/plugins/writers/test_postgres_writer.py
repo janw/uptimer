@@ -15,12 +15,8 @@ def test_write_to_postgres(mocker, mockpg):
         target="target-2", reader="pirates", integer_value=54321, float_value=543.21
     )
 
-    execute_batch = mocker.patch(
-        "uptimer.plugins.writers.postgres.execute_batch"
-    )
-    processor = mocker.patch(
-        "uptimer.plugins.writers.postgres.ProcessingThread"
-    )
+    execute_batch = mocker.patch("uptimer.plugins.writers.postgres.execute_batch")
+    processor = mocker.patch("uptimer.plugins.writers.postgres.ProcessingThread")
     ctx_processor = mocker.MagicMock(name="contextmanaged_processor")
     processor().__enter__.return_value = ctx_processor
 
@@ -74,12 +70,8 @@ def test_invalid_event_write_to_postgres(mocker, mockpg):
 
     event2["uuid"] = "nope"
 
-    execute_batch = mocker.patch(
-        "uptimer.plugins.writers.postgres.execute_batch"
-    )
-    processor = mocker.patch(
-        "uptimer.plugins.writers.postgres.ProcessingThread"
-    )
+    execute_batch = mocker.patch("uptimer.plugins.writers.postgres.execute_batch")
+    processor = mocker.patch("uptimer.plugins.writers.postgres.ProcessingThread")
     ctx_processor = mocker.MagicMock(name="contextmanaged_processor")
     processor().__enter__.return_value = ctx_processor
 

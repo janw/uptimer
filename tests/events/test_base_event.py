@@ -5,11 +5,9 @@ from uuid import UUID as uuid
 import pytest
 from jsonschema import ValidationError
 
+from tests.events.event_fixtures import DoublyNestedEvent, SimpleEvent, TypecastingEvent
 from uptimer.events import Event
 from uptimer.events.meta import EventDefinitionError
-from tests.events.event_fixtures import DoublyNestedEvent
-from tests.events.event_fixtures import SimpleEvent
-from tests.events.event_fixtures import TypecastingEvent
 
 
 def test_concrete_event_class():
@@ -46,7 +44,7 @@ def test_nested_schema_properties():
         "matches_regex",
         "customer",
         "cool_thing",
-        "something_nested"
+        "something_nested",
     ]
 
     dn = DoublyNestedEvent(validate=False)  # Do not validate for empty event

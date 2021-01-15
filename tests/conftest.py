@@ -2,16 +2,12 @@ import re
 import tempfile
 from collections import namedtuple
 from glob import glob
-from os import chdir
-from os import environ
-from os import getcwd
-from os import path
+from os import chdir, environ, getcwd, path
 
 import pytest
 
 from uptimer.events import SCHEMATA_PATH
 from uptimer.helpers.postgres import get_postgres_conn
-
 
 MARKABLE_FIXTURES = {"postgres_fixture": "postgres", "postgres_conn": "postgres"}
 

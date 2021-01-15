@@ -88,3 +88,50 @@ Two terminal windows are required for this, one for the producer instance (i.e. 
 . .venv/bin/activate
 ./bin/consumer.sh
 ```
+
+## Development Tools
+
+### Running the tests
+
+```bash
+. .venv/bin/activate
+pytest
+```
+
+Tests also run in [this GitHub Actions workflow](https://github.com/janw/uptimer/actions?query=workflow%3ATests) on every push, and pull request
+
+### Auto-formatting, code style and linting
+
+Uptimer's uses the [pre-commit framework](https://pre-commit.com/) to enforce consistency in code-formatting, and to avoid increased complexity and common mistakes and code smells. It is installed together with the dev-dependencies during the initial setup above. Its configuration can be found in [.pre-commit-config.yaml](.pre-commit-config.yaml) and contains instructions to enforce the following:
+
+* auto-formatting using [Black, the uncompromising Python code formatter](https://black.readthedocs.io).
+* import sorting using [isort](https://pycqa.github.io/isort/)
+* linting using [Flake8](https://flake8.pycqa.org) to ensure a consistent code-style, including the [bugbear plugin](https://github.com/PyCQA/flake8-bugbear)
+* a check to avoid using the print() built-in (most often should be replaced by a logger)
+* checks preventing `eval` and blanket `# NOQA` pragmas
+* checks preventing trailing whitespace, ensuring a single newline at the end of a file
+* a check to ensure validity of YAML files
+
+Run the checks in a one-off on all files:
+
+```bash
+. .venv/bin/activate
+
+pre-commit run --all-files
+```
+
+Or automatically on `git commit` when installed as a pre-commit hook:
+
+```bash
+. .venv/bin/activate
+
+pre-commit install
+```
+
+The pre-commit config is used in [this GitHub Actions workflow](https://github.com/janw/uptimer/actions?query=workflow%3ALinters) on every pull request and pushes to the master branch.
+
+### Commit style
+
+Uptimer follows the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) specification of formatting commit messages which helps auto-generating the [Changelog](CHANGELOG.md) in this [GitHub Actions workflow](https://github.com/janw/uptimer/actions?query=workflow%3A%22Bump+version%22) (must be triggered manually). The tool used here is [Commitizen](https://commitizen-tools.github.io/commitizen/).
+
+The commit style is checked in [this GitHub Actions workflow](https://github.com/janw/uptimer/actions?query=workflow%3ALinters) on every pull request and pushes to the master branch.
