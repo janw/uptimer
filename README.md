@@ -18,13 +18,9 @@ Uptimer is designed to be modular and extensible, and –by using reader/probe p
 
 The heart and core of Uptimer is an equally modular event paradigm that is used to ensure plugin compatibility and validity of data passed between plugins. Should a future to-be-probed protocol require additional properties to be produced, those can be defined in a new event type without the necessity of adapting other reader/writer plugins. Events based on and validated via [JSON Schema](https://json-schema.org/).
 
-Uptimer is packaged using poetry but is also available as a Docker image on [Docker Hub as `docker.io/willhaus/uptimer`](https://hub.docker.com/r/willhaus/uptimer) or `willhaus/uptimer` for short.
-
-In its default usage scenario Uptimer uses Kafka as a message bus to push probe results to, and PostgreSQL as the database to ultimately store the results in. In both the Docker-compose stack as well as the k8s manifests, Uptimer has been preconfigured to use the necessary plugins for this forwarding chain to function. In any case you will **have to provide a Postgres `DATABASE_URL` as well as a `KAFKA_BOOTSTRAP_SERVER` and certificate-based authentication for Kafka**, thus the first step (below) applies to both scenarios.
-
 ## Initial Setup
 
-1. After checkout create a Python 3.8 virtual environment and install the project dependencies.
+1. After checkout create a **Python 3.8** virtual environment and install the project dependencies.
 
     ```bash
     python3.8 -m venv .venv
@@ -89,6 +85,53 @@ Two terminal windows are required for this, one for the producer instance (i.e. 
 ./bin/consumer.sh
 ```
 
+### Adjusting the Configuration
+
+to run an instance with your own configuration parameters, you can do so by passing them to the application through environment variables. The main parameters of the HTTP prober are
+
+* `PROBE_URLS`: a list (TOML or YAML formatted!) of urls to probe
+* `PROBE_REGEXES`: a list (TOML or YAML formatted!) of regexes to check the URLs against. If only the list has a length of 1, it is used for all URLs. Otherwise the length has to match the length of `PROBE_URLS` (one regex per URL with same order)
+* `PROBE_INTERVAL`: an integer setting the pause between running all probes once
+
+By default Uptimer will use the HTTP prober and output all events to stdout, i.e. the `READER_PLUGIN` is set to `readers.prober.http`, and the `WRITER_PLUGIN` to `writers.stdout`. Thus a minimal config looks like this:
+
+```bash
+. .venv/bin/activate
+. configuration.env
+
+PROBE_URLS='["https://status.aiven.io"]' \
+    python -m uptimer
+
+# Or include a regex:
+PROBE_URLS='["https://status.aiven.io"]' \
+PROBE_REGEX='["All Systems Operational"]' \
+    python -m uptimer
+```
+
+To instead forward the events to Kafka, you can simply change the `WRITER_PLUGIN`:
+
+```bash
+. .venv/bin/activate
+. configuration.env
+
+WRITER_PLUGIN=writers.kafka \
+PROBE_URLS='["https://status.aiven.io"]' \
+PROBE_REGEX='["All Systems Operational"]' \
+    python -m uptimer
+```
+
+It's also possible to write the events to the database directly:
+
+```bash
+. .venv/bin/activate
+. configuration.env
+
+WRITER_PLUGIN=writers.postgres \
+PROBE_URLS='["https://status.aiven.io"]' \
+PROBE_REGEX='["All Systems Operational"]' \
+    python -m uptimer
+```
+
 ## Development Tools
 
 ### Running the tests
@@ -135,3 +178,20 @@ The pre-commit config is used in [this GitHub Actions workflow](https://github.c
 Uptimer follows the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) specification of formatting commit messages which helps auto-generating the [Changelog](CHANGELOG.md) in this [GitHub Actions workflow](https://github.com/janw/uptimer/actions?query=workflow%3A%22Bump+version%22) (must be triggered manually). The tool used here is [Commitizen](https://commitizen-tools.github.io/commitizen/).
 
 The commit style is checked in [this GitHub Actions workflow](https://github.com/janw/uptimer/actions?query=workflow%3ALinters) on every pull request and pushes to the master branch.
+
+## Containerized usage
+
+If you're so inclined Uptimer can be run in a containerized setting as well, and includes an example docker-compose stack  Again assuming the initial setup has been done, the docker-compose stack can be brought up:
+
+```bash
+. configuration.env
+
+docker-compose up --build
+```
+
+## Potential Future Improvements
+
+* Add (Web-)UI to actually display the collected data
+* Make use of relational database schema, linking hosts with probe events
+* Improve robustness of settings parsing, specifically for the lists of PROBE_URLS, PROBE_REGEXES
+* Add more meaningful tests, specifically to validate specific plugin's communication with outside service
