@@ -1,7 +1,7 @@
 from abc import ABC
 from importlib import import_module
 from inspect import isclass
-from typing import Any, ClassVar, Dict, Mapping, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, ClassVar, Dict, Optional, Tuple, Type, TypeVar, Union
 
 from structlog import get_logger
 
@@ -70,15 +70,15 @@ class BasePlugin(ABC):
     """
 
     def __str__(self):
-        modstr = self.__class__.__module__
+        modstr = f"{self.__class__.__module__}.{self.__class__.__name__}"
         if modstr.startswith("uptimer.plugins."):
-            modstr = modstr[20:]
+            modstr = modstr[16:]
         return modstr
 
     def __repr__(self):
         return f"Plugin({self})"
 
-    def stop(self) -> None:
+    def stop(self) -> None:  # pragma: no cover
         """Signalling method called when uptimer gets shut down.
 
         This method will most likely be called when a SIGTERM is received.
