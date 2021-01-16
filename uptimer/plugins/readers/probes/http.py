@@ -1,6 +1,9 @@
 import re
 import time
 from collections import namedtuple
+from os import path
+from pathlib import Path
+from typing import Any, Union
 from urllib.parse import urlparse
 
 import yaml
@@ -9,6 +12,9 @@ from requests import RequestException, Session
 from uptimer import events
 from uptimer.plugins.mixins import DistributeWorkMixin
 from uptimer.plugins.readers import ReaderPlugin
+
+DEFAULT_TLS_VERIFY = True
+
 
 session = Session()
 
@@ -32,12 +38,8 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.tls_verify = (
-            False
-            if self.settings.probe_tls_verify
-            and self.settings.probe_tls_verify.lower() in ("n", "no", "false", "0")
-            else True
-        )
+        session.verify = self._parse_tls_verify(self.settings.probe_tls_verify)
+
         self.probe_interval = (
             int(self.settings.probe_interval) if self.settings.probe_interval else 30
         )
@@ -82,6 +84,25 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
                     ),
                 )
             )
+
+    @staticmethod
+    def _parse_tls_verify(tls_verify: Any) -> Union[bool, Path]:
+        if tls_verify is None:
+            return DEFAULT_TLS_VERIFY
+        elif isinstance(tls_verify, bool):
+            return tls_verify
+        elif isinstance(tls_verify, int):
+            tls_verify = str(tls_verify)
+
+        if isinstance(tls_verify, str):
+            if tls_verify.lower() in ("n", "no", "false", "0"):
+                return False
+            elif tls_verify.lower() in ("y", "yes", "true", "1"):
+                return True
+            elif path.exists(tls_verify):
+                return Path(tls_verify)
+
+        raise ValueError(f"Unexpected value for PROBE_TLS_VERIFY: {tls_verify}")
 
     def _parse_probe_param(self, param):
         if isinstance(param, list):
@@ -128,9 +149,7 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
             matches_regex = True
             start_time = time.time()
             try:
-                response = session.get(
-                    url, timeout=self.probe_timeout, verify=self.tls_verify
-                )
+                response = session.get(url, timeout=self.probe_timeout)
                 status_code = response.status_code
             except RequestException as exc:
                 error = str(exc)
