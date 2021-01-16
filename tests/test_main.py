@@ -13,10 +13,8 @@ def test_main_func(mocker, log):
 
     main()
 
-    assert len(log.records) > 0
-    for record in log.records:
-        assert record.name.startswith("uptimer.")
-    assert "Starting uptimer" in str(log.records[0].msg)
+    assert len(log.events) > 0
+    assert log.has("Starting uptimer")
 
     loader.assert_called_once_with("writers.stdout")
     processor.assert_called_once_with(loader(), "some.plugin")

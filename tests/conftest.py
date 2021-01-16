@@ -5,6 +5,7 @@ from glob import glob
 from os import chdir, environ, getcwd, path
 
 import pytest
+import structlog
 
 from uptimer.events import SCHEMATA_PATH
 from uptimer.helpers.postgres import get_postgres_conn
@@ -55,12 +56,25 @@ def pytest_generate_tests(metafunc):
         )
 
 
-@pytest.fixture
-def log(caplog):
-    from uptimer.core.logging import setup_logging
+@pytest.fixture(autouse=True)
+def configure_structlog():
+    """Configures cleanly structlog for each test method.
 
-    setup_logging()
-    return caplog
+    Approach taken from author for compatibility with pytest.
+    See https://github.com/hynek/structlog/issues/76#issuecomment-240373958
+    """
+    structlog.reset_defaults()
+    structlog.configure(
+        processors=[
+            structlog.processors.StackInfoRenderer(),
+            structlog.processors.format_exc_info,
+            structlog.processors.KeyValueRenderer(),
+        ],
+        wrapper_class=structlog.stdlib.BoundLogger,
+        context_class=dict,
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        cache_logger_on_first_use=False,
+    )
 
 
 re_split_migration = re.compile(r"^\-\-.*(migrate\:(?:up|down)).*$", re.MULTILINE)
