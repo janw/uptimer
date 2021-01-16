@@ -30,6 +30,3 @@ class Plugin(ReaderPlugin):
                 integer_value=random.randint(0, 1000000),
                 float_value=random.uniform(0, 1000000),
             )
-
-    # Plugin is always generating dummy data; use .read for .dummy_read
-    dummy_read = read

@@ -86,25 +86,6 @@ class BasePlugin(ABC):
         """
         pass
 
-    def filter_by_schema(self, obj: Mapping) -> dict:
-        """Filters an object/dict according to properties defined in the JSON schema."""
-        schema_spec = self.event_type.schema_spec
-        (_, properties) = schema_spec.get("allOf", [None, {"properties": {}}])
-        properties = properties["properties"]
-
-        if isinstance(obj, dict):
-            return {
-                property_id: obj.get(property_id)
-                for property_id in properties.keys()
-                if property_id in obj
-            }
-        else:
-            return {
-                property_id: getattr(obj, property_id)
-                for property_id in properties.keys()
-                if hasattr(obj, property_id)
-            }
-
 
 class ShutdownMarker:
     """Signalling class to mark end of input

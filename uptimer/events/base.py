@@ -224,29 +224,3 @@ class Event(MutableMapping, metaclass=EventMeta):
         if validate:
             self.validate()
         return json.dumps(self._data, cls=JSONEncoder, **kwargs)
-
-    @classmethod
-    def dummy_instances(cls, max_count=None):
-        """Yields Event class instances with randomly generated dummy data.
-
-        Returns:
-            generator: Generator for single instances of the class populated with dummy
-                data.
-
-        """
-        dummy = cls.DummyData()
-        for data in dummy.generate():
-            yield cls(validate=False, **data)
-
-    class DummyData:
-        MAX_COUNT = 1000
-
-        def generate(self):
-            raise NotImplementedError(
-                "DummyData not implemented."
-                " Add a subclass DummyData to your event type or"
-                " override the dummy_read method of your plugin."
-            )
-
-            for _ in range(self.MAX_COUNT):
-                yield {}

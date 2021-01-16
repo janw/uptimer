@@ -1,5 +1,4 @@
 import logging.config
-import sys
 from os import path
 
 import structlog
@@ -17,34 +16,11 @@ def load_config():
 OVERRIDES_CONFIG = load_config()
 
 
-def add_error_name(logger, method_name, event_dict):
-    """
-    Add the error name to the event dict.
-    """
-
-    info = event_dict.get("exc_info")
-    if not info:
-        return event_dict
-
-    # Normalize the exc_info into its native tuple form (as used by the sys module).
-    if isinstance(info, BaseException):
-        info = (info.__class__, info, info.__traceback__)
-    elif isinstance(info, tuple):
-        pass
-    else:
-        info = sys.exc_info()
-
-    error_name = info[0].__qualname__ if info[0] else None
-    event_dict.update({"exc_info": info, "error": error_name})
-    return event_dict
-
-
 DEFAULT_PROCESSORS = [
     structlog.processors.StackInfoRenderer(),
     structlog.dev.set_exc_info,
     structlog.stdlib.add_log_level,
     structlog.stdlib.add_logger_name,
-    add_error_name,  # Must appear before format_exc_info
     structlog.processors.format_exc_info,
     structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M.%SZ", utc=True),
     structlog.processors.UnicodeDecoder(),
@@ -67,7 +43,7 @@ def setup_logging():
         logged.
     """
     processors = DEFAULT_PROCESSORS
-    if settings.current_env.lower() == "development":
+    if settings.current_env.lower() == "development":  # pragma: no cover
         pad_event = int(settings.get("DEVELOPMENT_PAD_EVENT", "50"))
         processors += [structlog.dev.ConsoleRenderer(pad_event=pad_event, colors=True)]
     else:
