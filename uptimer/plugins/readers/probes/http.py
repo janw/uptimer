@@ -4,7 +4,7 @@ from collections import namedtuple
 from urllib.parse import urlparse
 
 import yaml
-from requests import RequestException, Session, Timeout
+from requests import RequestException, Session
 
 from uptimer import events
 from uptimer.plugins.mixins import DistributeWorkMixin
@@ -132,11 +132,8 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
                     url, timeout=self.probe_timeout, verify=self.tls_verify
                 )
                 status_code = response.status_code
-            except Timeout:
-                error = "Connection timed out"
-                status_code = 0
-            except RequestException:
-                error = "Exception encountered during probe"
+            except RequestException as exc:
+                error = str(exc)
                 status_code = 0
 
             response_time_ms = round(1000 * (time.time() - start_time))
