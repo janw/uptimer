@@ -18,7 +18,7 @@ logger = get_logger()
 @format_checker.checks("uuid")
 def is_uuid(instance):
     if not isinstance(instance, jsonschema.compat.str_types):
-        return True
+        return False
     return uuid_re.match(instance) is not None
 
 
@@ -30,7 +30,7 @@ class JSONEncoder(json.JSONEncoder):
             return self.from_uuid(obj)
         if isinstance(obj, re.Pattern):
             return self.from_pattern(obj)
-        return json.JSONEncoder.default(self, obj)
+        return json.JSONEncoder.default(self, obj)  # pragma: no cover
 
     @staticmethod
     def from_datetime(obj):
