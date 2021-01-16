@@ -19,7 +19,7 @@ DEFAULT_TLS_VERIFY = True
 session = Session()
 
 
-ProbeTarget = namedtuple("ProbeTarget", "protocol, hostname, port, path, regex")
+ProbeTarget = namedtuple("ProbeTarget", "protocol, hostname, port, path")
 
 
 class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
@@ -87,8 +87,8 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
                         url_parts.hostname,
                         port,
                         url_parts.path,
-                        regex,
                     ),
+                    regex,
                 )
             )
         return targets
@@ -159,7 +159,7 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
 
     def _probe_all(self):
 
-        for url, target in self.targets:
+        for url, target, regex in self.targets:
             self.logger.info(f"Probing {target.hostname}")
 
             error = ""
@@ -175,9 +175,9 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
 
             response_time_ms = round(1000 * (time.time() - start_time))
 
-            if target.regex and response:
-                self.logger.info(f"Checking regex /{target.regex.pattern}/")
-                matches_regex = target.regex.search(response.text) is not None
+            if regex and response:
+                matches_regex = regex.search(response.text) is not None
+                self.logger.info(f"Matches regex /{regex.pattern}/: {matches_regex}")
 
             yield self.event_type(
                 **target._asdict(),
@@ -185,6 +185,7 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
                 response_time_ms=response_time_ms,
                 error=error,
                 matches_regex=matches_regex,
+                regex=regex.pattern if regex else "",
             )
 
             self.logger.info(f"Done after {response_time_ms} ms")

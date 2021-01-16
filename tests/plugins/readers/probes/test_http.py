@@ -71,27 +71,27 @@ def test_parse_probe_param_with_errors(input_val, expected):
     [
         (
             "http://example.com",
-            http.ProbeTarget("http", "example.com", 80, "", None),
+            http.ProbeTarget("http", "example.com", 80, ""),
         ),
         (
             "http://user:mypass@example.com",
-            http.ProbeTarget("http", "example.com", 80, "", None),
+            http.ProbeTarget("http", "example.com", 80, ""),
         ),
         (
             "http://user@example.com:9091",
-            http.ProbeTarget("http", "example.com", 9091, "", None),
+            http.ProbeTarget("http", "example.com", 9091, ""),
         ),
         (
             "https://user@example.com:9092/path",
-            http.ProbeTarget("https", "example.com", 9092, "/path", None),
+            http.ProbeTarget("https", "example.com", 9092, "/path"),
         ),
         (
             "https://example.com/path",
-            http.ProbeTarget("https", "example.com", 443, "/path", None),
+            http.ProbeTarget("https", "example.com", 443, "/path"),
         ),
         (
             "https://example.com",
-            http.ProbeTarget("https", "example.com", 443, "", None),
+            http.ProbeTarget("https", "example.com", 443, ""),
         ),
     ],
     ids=[
@@ -108,7 +108,7 @@ def test_compile_target_list(input_val, expected):
     targets = prober._compile_target_list([None], [input_val])
 
     assert len(targets) == 1
-    assert targets[0] == (input_val, expected)
+    assert targets[0] == (input_val, expected, None)
 
 
 @pytest.mark.parametrize(
