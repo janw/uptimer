@@ -104,13 +104,23 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
 
         raise ValueError(f"Unexpected value for PROBE_TLS_VERIFY: {tls_verify}")
 
-    def _parse_probe_param(self, param):
+    @staticmethod
+    def _parse_probe_param(param):
         if isinstance(param, list):
             return param
-        try:
-            return yaml.safe_load(param)
-        except yaml.YAMLError:
-            raise ValueError("Parameters must be either TOML or YAML parseable")
+        elif isinstance(param, str):
+            try:
+                loaded = yaml.safe_load(param)
+
+                if isinstance(loaded, str):
+                    loaded = [loaded]
+                return loaded
+
+            except yaml.YAMLError:
+                pass
+        raise ValueError(
+            "Parameters must be either TOML or YAML parseable or a simple string"
+        )
 
     def _parse_probe_regexes(self, regexes, expected_count=1):
         if not regexes:
