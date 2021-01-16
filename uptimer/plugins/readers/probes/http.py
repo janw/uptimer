@@ -55,11 +55,16 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
             self.settings.probe_regexes, expected_count=len(probe_urls)
         )
 
-        self.targets = []
+        self.targets = self._compile_target_list(regexes, probe_urls)
+
+    def _compile_target_list(self, regexes, probe_urls):
+        targets = []
         for regex, url in self.distribute_data(zip(regexes, probe_urls)):
+            if not url or not isinstance(url, str):
+                raise TypeError(f"URLs must be of type str, not {type(url)}: {url}")
             url = url.strip()
-            if not url:
-                continue
+            if not url.startswith("http://") and not url.startswith("https://"):
+                raise ValueError("URLs must start with http(s)://")
 
             url_parts = urlparse(url)
 
@@ -70,13 +75,15 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
             else:
                 port = 80
 
-            self.targets.append(
+            targets.append(
                 (
                     url,
                     # Keep all static properties in ProbeTarget namedtuple so they can
                     # be forwarded into the event via call to `._as_dict`.
                     ProbeTarget(
                         url_parts.scheme,
+                        # Make sure to only include the hostname,
+                        # not basic-auth params if present.
                         url_parts.hostname,
                         port,
                         url_parts.path,
@@ -84,6 +91,7 @@ class HTTPProbe(DistributeWorkMixin, ReaderPlugin):
                     ),
                 )
             )
+        return targets
 
     @staticmethod
     def _parse_tls_verify(tls_verify: Any) -> Union[bool, Path]:
