@@ -7,6 +7,9 @@ authors = [
 ]
 license = "Apache-2.0"
 
+[tool.poetry.scripts]
+uptimer = 'uptimer.cli:cli'
+
 [tool.poetry.dependencies]
 python = "^3.8"
 jsonschema = {version = "^3.0",extras = ["format"]}

@@ -189,6 +189,18 @@ If you're so inclined Uptimer can be run in a containerized setting as well, and
 docker-compose up --build
 ```
 
+## Installing via Pip
+
+Since Uptimer uses the PEP517-compatible dependency/project manager Poetry, it is easy to install Uptimer via pip directly, too.
+
+```bash
+    python3.8 -m venv uptimer_venv
+    . uptimer_venv/bin/activate
+    pip install -U git+git://github.com/janw/uptimer.git#egg=uptimer
+
+    uptimer
+```
+
 ## Potential Future Improvements
 
 * Add (Web-)UI to actually display the collected data

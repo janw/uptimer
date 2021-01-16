@@ -1,8 +1,3 @@
-from uptimer.core.logging import setup_logging
+from uptimer.cli import cli
 
-setup_logging()
-
-
-from uptimer.main import main  # noqa: E402
-
-main()
+cli()
