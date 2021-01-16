@@ -1,3 +1,21 @@
+## 0.2.1 (2021-01-16)
+
+### Refactor
+
+- **stdout**: format as indented JSON
+- **probes.http**: split off target_list logic into method
+- **tests**: add fixture to override config variables
+- **probes.http**: split off tls_verify logic into method
+- **probes.http**: use requests error messages in event
+- **events**: remove unused dummy mode
+
+### Fix
+
+- **probes.http**: avoid passing native re.Pattern to event
+- **probes.http**: make urls argparsing more robust
+- **mixins**: make distr. worker argument parsing more robust
+- **events.formats**: wrong return in is_uuid on non-str formats
+
 ## 0.2.0 (2021-01-15)
 
 ### Refactor
