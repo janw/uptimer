@@ -89,8 +89,8 @@ Two terminal windows are required for this, one for the producer instance (i.e. 
 
 to run an instance with your own configuration parameters, you can do so by passing them to the application through environment variables. The main parameters of the HTTP prober are
 
-* `PROBE_URLS`: a list (TOML or YAML formatted!) of urls to probe
-* `PROBE_REGEXES`: a list (TOML or YAML formatted!) of regexes to check the URLs against. If only the list has a length of 1, it is used for all URLs. Otherwise the length has to match the length of `PROBE_URLS` (one regex per URL with same order)
+* `PROBE_URLS`: a single URL string, or a list (TOML or YAML formatted!) of urls to probe
+* `PROBE_REGEXES`: a single regex string, or a list (TOML or YAML formatted!) of regexes to check the URLs against. If only the list has a length of 1, it is used for all URLs. Otherwise the length has to match the length of `PROBE_URLS` (one regex per URL with same order)
 * `PROBE_INTERVAL`: an integer setting the pause between running all probes once
 
 By default Uptimer will use the HTTP prober and output all events to stdout, i.e. the `READER_PLUGIN` is set to `readers.prober.http`, and the `WRITER_PLUGIN` to `writers.stdout`. Thus a minimal config looks like this:
@@ -99,12 +99,11 @@ By default Uptimer will use the HTTP prober and output all events to stdout, i.e
 . .venv/bin/activate
 . configuration.env
 
-PROBE_URLS='["https://status.aiven.io"]' \
-    python -m uptimer
+PROBE_URLS='https://status.aiven.io' python -m uptimer
 
-# Or include a regex:
-PROBE_URLS='["https://status.aiven.io"]' \
-PROBE_REGEX='["All Systems Operational"]' \
+# Or include a regex and multiple URLs:
+PROBE_URLS='["https://status.aiven.io", "https://www.githubstatus.com"]' \
+PROBE_REGEXES='All Systems Operational' \
     python -m uptimer
 ```
 
@@ -115,8 +114,8 @@ To instead forward the events to Kafka, you can simply change the `WRITER_PLUGIN
 . configuration.env
 
 WRITER_PLUGIN=writers.kafka \
-PROBE_URLS='["https://status.aiven.io"]' \
-PROBE_REGEX='["All Systems Operational"]' \
+PROBE_URLS='["https://status.aiven.io", "https://www.githubstatus.com"]' \
+PROBE_REGEXES='All Systems Operational' \
     python -m uptimer
 ```
 
@@ -127,8 +126,8 @@ It's also possible to write the events to the database directly:
 . configuration.env
 
 WRITER_PLUGIN=writers.postgres \
-PROBE_URLS='["https://status.aiven.io"]' \
-PROBE_REGEX='["All Systems Operational"]' \
+PROBE_URLS='["https://status.aiven.io", "https://www.githubstatus.com"]' \
+PROBE_REGEXES='All Systems Operational' \
     python -m uptimer
 ```
 
