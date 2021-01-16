@@ -1,4 +1,3 @@
-import logging
 from queue import Empty, Queue
 from unittest.mock import call
 
@@ -19,7 +18,6 @@ def test_processing_thread_init(mocker):
 
     processor._stop_event = mocker.MagicMock(name="stop_event")
     processor._data["main"] = mocker.MagicMock(name="data")
-    processor.is_alive = mocker.MagicMock(name="is_alive", return_value=True)
     processor.join = mocker.MagicMock(name="join")
 
     processor.put("Testing")
@@ -32,6 +30,7 @@ def test_processing_thread_init(mocker):
 
     assert processor.stopped is True
     processor._stop_event.is_set.assert_called_once()
+    assert not processor.is_alive()
 
 
 def test_processing_thread_create_queues(mocker):
@@ -45,6 +44,8 @@ def test_processing_thread_create_queues(mocker):
         assert isinstance(elem, Queue)
     for name in ("main", "other queue"):
         assert name in processor._data.keys()
+
+    assert not processor.is_alive()
 
 
 def test_processing_thread_queue_page(mocker):
@@ -76,40 +77,36 @@ def test_processing_thread_queue_page_empty(mocker):
     processor._data["main"].get.assert_called_once()
 
 
-def test_processing_thread_no_queue(mocker, caplog):
+def test_processing_thread_no_queue(mocker, log):
     processor = ProcessingThread(mocker.MagicMock(name="callback"), page_size=10)
-
-    with caplog.at_level(logging.DEBUG):
-        assert processor._get_page_from_queue() == []
-    assert "No queues present" in caplog.text
+    assert processor._get_page_from_queue() == []
+    assert log.has("No queues present, cannot get page.", level="debug")
 
 
-def test_processing_thread_shutdown_marker(mocker, caplog):
+def test_processing_thread_shutdown_marker(mocker, log):
     processor = ProcessingThread(mocker.MagicMock(name="callback"), page_size=10)
     processor._data["main"] = mocker.MagicMock(name="data")
     processor._data["main"].get.return_value = ShutdownMarker()
 
-    with caplog.at_level(logging.DEBUG):
-        assert processor._get_page_from_queue() == []
+    assert processor._get_page_from_queue() == []
     assert len(processor._data) == 0
-    assert "Received shutdown marker" in caplog.text
+    assert log.has("Received shutdown marker")
 
 
-def test_processing_thread_check_liveness(mocker, caplog):
+def test_processing_thread_check_liveness(mocker, log):
     processor = ProcessingThread(mocker.MagicMock(name="callback"), page_size=10)
     processor.is_alive = mocker.MagicMock()
     processor.is_alive.return_value = False
 
-    with caplog.at_level(logging.ERROR):
-        processor._check_liveness()
-    assert "thread not alive" in caplog.text
+    processor._check_liveness()
+    assert log.has("Processing thread not alive.")
 
     processor.exception = Exception("Random exception")
     with pytest.raises(Exception):
         processor._check_liveness()
 
 
-def test_processing_thread_run(mocker, caplog):
+def test_processing_thread_run(mocker, log):
     expected_data = ["Some Queue Value", "Another Value"]
     expected_empty_state = [False, True]
     mock_callback = mocker.MagicMock(name="callback")
@@ -120,22 +117,20 @@ def test_processing_thread_run(mocker, caplog):
     processor._stop_event = mocker.MagicMock(name="stop_event")
     processor._stop_event.is_set.return_value = True
 
-    with caplog.at_level(logging.DEBUG):
-        processor.run()
+    processor.run()
     mock_callback.assert_has_calls([call([expected_data[0]]), call([expected_data[1]])])
-    assert "Finished processing queue" in caplog.text
-    assert "Current page size" in caplog.text
+    assert log.has("Finished processing queue after stop signal")
+    assert log.has("Current page size: 1 events", page_size=1)
 
     processor._data["main"].get.side_effect = expected_data
     mock_callback.reset_mock()
     mock_callback.side_effect = Exception("Callback failed")
-    with caplog.at_level(logging.ERROR):
-        processor.run()
+    processor.run()
     mock_callback.assert_called_once_with([expected_data[0]])
-    assert "unexpected exception" in caplog.text
+    assert log.has("Caught an unexpected exception")
 
 
-def test_processing_thread_run_with_callbarg_args(mocker, caplog):
+def test_processing_thread_run_with_callbarg_args(mocker, log):
     expected_data = "Some Queue Value"
     mock_callback = mocker.MagicMock(name="callback")
     processor = ProcessingThread(
@@ -147,10 +142,22 @@ def test_processing_thread_run_with_callbarg_args(mocker, caplog):
     processor._stop_event = mocker.MagicMock(name="stop_event")
     processor._stop_event.is_set.return_value = True
 
-    with caplog.at_level(logging.DEBUG):
-        processor.run()
+    processor.run()
     mock_callback.assert_called_once_with(
         [expected_data], some_arg="present", another_arg=False
     )
-    assert "Finished processing queue" in caplog.text
-    assert "Current page size" in caplog.text
+    assert log.has("Finished processing queue after stop signal")
+    assert log.has("Current page size: 1 events", page_size=1)
+    assert not processor.is_alive()
+
+
+def test_processing_thread_as_context_manager(mocker):
+    mock_callback = mocker.MagicMock(name="callback")
+    processor = ProcessingThread(mock_callback)
+    assert not processor.is_alive()
+
+    with processor as p:
+        assert isinstance(p, ProcessingThread)
+        assert p.is_alive()
+
+    assert not processor.is_alive()
