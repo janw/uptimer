@@ -7,6 +7,7 @@ from os import chdir, environ, getcwd, path
 import pytest
 import structlog
 
+from uptimer.core import settings
 from uptimer.events import SCHEMATA_PATH
 from uptimer.helpers.postgres import get_postgres_conn
 
@@ -152,3 +153,23 @@ def mockpg(mocker):
         get_conn.return_value.cursor,
         get_conn.return_value.cursor.return_value.__enter__.return_value,
     )
+
+
+@pytest.fixture()
+def conf_override():
+    previous_state = {}
+    _UNSET = object()
+
+    def override(key, val):
+        if key not in previous_state:
+            previous_state[key] = settings.get(key, _UNSET)
+        settings.set(key, val)
+
+    yield override
+
+    for key, val in previous_state.items():
+        if val is _UNSET:
+            delattr(settings, key)
+            settings.store.pop(key, None)
+        else:
+            settings.set(key, val)
