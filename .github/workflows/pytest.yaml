@@ -7,17 +7,36 @@ on:
 jobs:
   pytest:
     runs-on: ubuntu-20.04
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 8
+
+    env:
+      TESTING_DATABASE_URL: "postgres://postgres:postgres@postgres/postgres?sslmode=disable"
+
+    container: python:3.8
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: "3.8"
+
+      - name: Apply migrations
+        run: |
+          curl -fsSL -o /usr/bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
+          chmod +x /usr/bin/dbmate
+
+          /usr/bin/dbmate --env TESTING_DATABASE_URL --no-dump-schema up
 
       - name: Install poetry
         uses: abatilo/actions-poetry@v2.1.0
 
       - name: Install system-level dependencies
-        run: sudo sh ./tools/dependencies-pre.sh
+        run: sh ./tools/dependencies-pre.sh
 
       - name: Set up pip cache
         uses: actions/cache@v2
@@ -50,6 +69,8 @@ jobs:
             --no-cov-on-fail
 
       - name: Upload coverage to codecov.io
-        run: bash <(curl -s https://codecov.io/bash)
+        run: |
+          curl -fsSL -o /tmp/codecov.sh https://codecov.io/bash
+          bash /tmp/codecov.sh
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

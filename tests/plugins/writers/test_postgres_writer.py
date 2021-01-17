@@ -1,9 +1,17 @@
+from os import environ
 from unittest.mock import call
 
+import pytest
 from psycopg2 import sql
 
+from uptimer.core import settings
 from uptimer.events import DummyEvent
+from uptimer.helpers.postgres import get_postgres_conn
 from uptimer.plugins.writers import postgres
+
+require_postgres = pytest.mark.skipif(
+    "TESTING_DATABASE_URL" not in environ, reason="No real TESTING_DATABASE_URL set"
+)
 
 
 def test_write_to_postgres(mocker, mockpg):
@@ -107,3 +115,86 @@ def test_invalid_event_write_to_postgres(mocker, mockpg):
     mockpg.connection.commit.assert_called_once()
 
     processor().__exit__.assert_called_once()
+
+
+@require_postgres
+def test_postgres_connection_cached():
+    db_url = settings.get("DATABASE_URL")
+    conn1 = get_postgres_conn(db_url)
+    conn2 = get_postgres_conn(db_url)
+
+    assert conn1 is conn2
+
+
+@require_postgres
+def test_postgres_inserts(postgres_conn):
+    verify_query = sql.SQL(
+        """
+SELECT
+*
+FROM
+{}"""
+    ).format(sql.Identifier(DummyEvent.table))
+
+    with postgres_conn.cursor() as cursor:
+        cursor.execute(verify_query)
+        row_count_before = cursor.rowcount
+
+    event1 = DummyEvent(
+        target="target-1", reader="ninjas", integer_value=12345, float_value=123.45
+    )
+
+    event2 = DummyEvent(
+        target="target-2", reader="pirates", integer_value=4321, float_value=543.21
+    )
+    writer_argument = [event1, event2]
+
+    writer = postgres.Plugin()
+    writer.write(iter(writer_argument))
+
+    with postgres_conn.cursor() as cursor:
+        cursor.execute(verify_query)
+        assert cursor.rowcount == row_count_before + 2
+
+    # Try writing the same events again leading to exception in background thread
+    writer.write(iter(writer_argument))
+
+    with postgres_conn.cursor() as cursor:
+        cursor.execute(verify_query)
+        assert cursor.rowcount == row_count_before + 2
+
+    event3 = DummyEvent(
+        target="target-1", reader="ninjas", integer_value=12345, float_value=123.45
+    )
+
+    # Try writing a new one, valid
+    writer.write(iter([event3]))
+    with postgres_conn.cursor() as cursor:
+        cursor.execute(verify_query)
+        assert cursor.rowcount == row_count_before + 3
+
+    event4 = DummyEvent(
+        target="target-1",
+        reader="ninjas",
+        integer_value=-32999,  # triggers NumericValueOutOfRange on smallint
+        float_value=123.45,
+    )
+
+    # Try writing another one, trigger DataError, no rowcount increase
+    writer.write(iter([event4]))
+    with postgres_conn.cursor() as cursor:
+        cursor.execute(verify_query)
+        assert cursor.rowcount == row_count_before + 3
+
+    event5 = DummyEvent(
+        target="target-1",
+        reader="ninjas",
+        integer_value=7,
+        float_value=123.45,
+    )
+
+    # One last try with one existing (skipped) and one new (inserted)
+    writer.write(iter([event1, event5]))
+    with postgres_conn.cursor() as cursor:
+        cursor.execute(verify_query)
+        assert cursor.rowcount == row_count_before + 4

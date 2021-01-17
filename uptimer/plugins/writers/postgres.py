@@ -94,7 +94,7 @@ class Plugin(WriterPlugin):
         except DataError:
             self.logger.exception("Caught database error.", **logging_properties)
             connection.commit()
-        except Exception:
+        except Exception:  # pragma: no cover
             self.logger.exception(
                 "Caught unhandled exception. Reraising.", **logging_properties
             )
