@@ -6,7 +6,7 @@ CREATE TABLE dummy_events (
   schema_version varchar NOT NULL,
   reader varchar NOT NULL,
   target varchar NOT NULL,
-  integer_value bigint NOT NULL,
+  integer_value smallint NOT NULL,
   float_value numeric NOT NULL,
   CONSTRAINT pk_dummy_event PRIMARY KEY (event_time, uuid)
 );
