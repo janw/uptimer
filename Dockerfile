@@ -4,6 +4,7 @@ FROM python:3.8 as requirements_export
 
 RUN pip install poetry
 
+WORKDIR /tmp
 COPY pyproject.toml poetry.lock ./
 RUN poetry export -o /requirements.txt
 
@@ -21,7 +22,7 @@ COPY --from=requirements_export /requirements.txt ./
 RUN \
     chmod +x ./tools/* && \
     ./tools/dependencies-pre.sh && \
-    pip install -r requirements.txt && \
+    pip install --no-cache-dir -r requirements.txt && \
     ./tools/dependencies-post.sh
 
 COPY tools/entrypoint.sh /
